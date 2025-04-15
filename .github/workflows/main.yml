@@ -36,9 +36,138 @@ jobs:
           Email.ApiKeyPrivate: ${{ secrets.EMAIL_API_KEY_PRIVATE }}
           Email.FromEmail: ${{ secrets.EMAIL_FROM_EMAIL }}
           Email.FromName: ${{ secrets.EMAIL_FROM_NAME }}
+          Jwt:Issuer: "issuer"
+          Jwt:Audience: "audience"
+          Jwt:SecretKey: "ssupasde sdamek asdmk a kasdkasnd ksak ndkasnd ksa ndkasdn"
+          Jwt:ValidFor: 120
 
       - name: Build
         run: dotnet build ./GameGather.sln --no-restore --configuration Release
 
       - name: Test
         run:  dotnet test ./GameGather.sln --configuration Release --no-restore --no-build
+
+      - name: Publish
+        run: dotnet publish ./src/GameGather.Api/GameGather.Api.csproj -c Release -o ./publish
+
+  terraform:
+    if: github.event_name == 'pull_request'
+    defaults:
+      run:
+        working-directory: ./terraform
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 4.26.0
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt 
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Init
+        run: terraform init ./terraform/azure
+
+      - name: Terraform Plan
+        run: terraform plan 
+
+      - uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Style')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            <details><summary>Validation Output</summary>
+
+            \`\`\`\n
+            ${{ steps.validate.outputs.stdout }}
+            \`\`\`
+
+            </details>
+
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }  
+
+      - name: Terraform Apply
+        id: apply
+        run: terraform apply --auto-approve --no-color --input=false 
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_USE_AZUREAD: true
+          
+      - name: Terraform Output
+        id: terraform_output
+        run: |
+          echo "webapp_name=$(terraform output -raw webapp_name)" >> $GITHUB_OUTPUT
+          echo "resource_group_name=$(terraform output -raw resource_group_name)" >> $GITHUB_OUTPUT
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build, terraform]
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    steps:        
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ needs.terraform.outputs.terraform_output.webapp_name }}
+          resource-group-name: ${{ needs.terraform.outputs.terraform_output.resource_group_name }}
+          package: ./publish
