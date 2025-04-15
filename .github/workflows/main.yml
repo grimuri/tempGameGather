@@ -1,0 +1,45 @@
+name: Build and deploy ASP.Net Core app to Azure Web App - GameGatherApi
+
+on:
+  pull_request:
+    types: [reopened, opened, synchronize, edited]
+  workflow_dispatch:
+
+env:
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_USE_AZUREAD: true
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore ./Studweb.sln
+        
+      - name: Substitute appsettings.json entries
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: './src/Api/Studweb.Api/appsettings.json'
+        env:
+          Email.SenderEmail: ${{ secrets.Email_SenderEmail }}
+          Email.Host: ${{ secrets.Email_Host }}
+          Email.Port: ${{ secrets.Email_Port }}
+          Email.Username: ${{ secrets.Email_Username }}
+          Email.Password: ${{ secrets.Email_Password }}
+
+      - name: Build
+        run: dotnet build ./Studweb.sln --no-restore --configuration Release
+
+      - name: Test
+        run:  dotnet test ./Studweb.sln --configuration Release --no-restore --no-build
