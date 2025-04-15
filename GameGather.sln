@@ -1,0 +1,82 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{09A12561-E947-4973-971D-65F40339E201}"
+	ProjectSection(SolutionItems) = preProject
+		src\docker-compose.yml = src\docker-compose.yml
+		src\.env = src\.env
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameGather.Api", "src\GameGather.Api\GameGather.Api.csproj", "{6B4CA5EF-8748-46A2-AF93-D0726B610F9E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameGather.Application", "src\GameGather.Application\GameGather.Application.csproj", "{96317DA1-1849-4DC9-8397-8897966A5183}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameGather.Domain", "src\GameGather.Domain\GameGather.Domain.csproj", "{0C4C0552-2D16-40C2-A8FD-BE5AB26CF9C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameGather.Infrastructure", "src\GameGather.Infrastructure\GameGather.Infrastructure.csproj", "{D6D00AA4-CB7C-4A9D-A596-4DE82CFCAE88}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D4D91E9D-4CAB-4B00-A36E-18444789CA80}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTests", "IntegrationTests", "{9A41639D-DAE2-430A-9B8F-6C0CC8A5D468}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{3B989CE9-1561-4090-AB6C-95CD30E89372}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameGather.IntegrationTests", "test\IntegrationTests\GameGather.IntegrationTests\GameGather.IntegrationTests.csproj", "{9CF28F2A-E4D4-49A5-A412-3B02AD27934A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameGather.Domain.UnitTests", "test\UnitTests\GameGather.Domain.UnitTests\GameGather.Domain.UnitTests.csproj", "{AAA37262-65E9-474F-8171-DDF65E728F8F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameGather.Application.UnitTests", "test\UnitTests\GameGather.Application.UnitTests\GameGather.Application.UnitTests.csproj", "{67279F6E-5054-4DB5-BBFB-824614BF14A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameGather.Infrastructure.UnitTests", "test\UnitTests\GameGather.Infrastructure.UnitTests\GameGather.Infrastructure.UnitTests.csproj", "{6033AB92-CD5C-42E2-BA37-03C07FE4F067}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6B4CA5EF-8748-46A2-AF93-D0726B610F9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B4CA5EF-8748-46A2-AF93-D0726B610F9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B4CA5EF-8748-46A2-AF93-D0726B610F9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B4CA5EF-8748-46A2-AF93-D0726B610F9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96317DA1-1849-4DC9-8397-8897966A5183}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96317DA1-1849-4DC9-8397-8897966A5183}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96317DA1-1849-4DC9-8397-8897966A5183}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96317DA1-1849-4DC9-8397-8897966A5183}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C4C0552-2D16-40C2-A8FD-BE5AB26CF9C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C4C0552-2D16-40C2-A8FD-BE5AB26CF9C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C4C0552-2D16-40C2-A8FD-BE5AB26CF9C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C4C0552-2D16-40C2-A8FD-BE5AB26CF9C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6D00AA4-CB7C-4A9D-A596-4DE82CFCAE88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6D00AA4-CB7C-4A9D-A596-4DE82CFCAE88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6D00AA4-CB7C-4A9D-A596-4DE82CFCAE88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6D00AA4-CB7C-4A9D-A596-4DE82CFCAE88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CF28F2A-E4D4-49A5-A412-3B02AD27934A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CF28F2A-E4D4-49A5-A412-3B02AD27934A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CF28F2A-E4D4-49A5-A412-3B02AD27934A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CF28F2A-E4D4-49A5-A412-3B02AD27934A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAA37262-65E9-474F-8171-DDF65E728F8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAA37262-65E9-474F-8171-DDF65E728F8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAA37262-65E9-474F-8171-DDF65E728F8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAA37262-65E9-474F-8171-DDF65E728F8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67279F6E-5054-4DB5-BBFB-824614BF14A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67279F6E-5054-4DB5-BBFB-824614BF14A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67279F6E-5054-4DB5-BBFB-824614BF14A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67279F6E-5054-4DB5-BBFB-824614BF14A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6033AB92-CD5C-42E2-BA37-03C07FE4F067}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6033AB92-CD5C-42E2-BA37-03C07FE4F067}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6033AB92-CD5C-42E2-BA37-03C07FE4F067}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6033AB92-CD5C-42E2-BA37-03C07FE4F067}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6B4CA5EF-8748-46A2-AF93-D0726B610F9E} = {09A12561-E947-4973-971D-65F40339E201}
+		{96317DA1-1849-4DC9-8397-8897966A5183} = {09A12561-E947-4973-971D-65F40339E201}
+		{0C4C0552-2D16-40C2-A8FD-BE5AB26CF9C9} = {09A12561-E947-4973-971D-65F40339E201}
+		{D6D00AA4-CB7C-4A9D-A596-4DE82CFCAE88} = {09A12561-E947-4973-971D-65F40339E201}
+		{9A41639D-DAE2-430A-9B8F-6C0CC8A5D468} = {D4D91E9D-4CAB-4B00-A36E-18444789CA80}
+		{3B989CE9-1561-4090-AB6C-95CD30E89372} = {D4D91E9D-4CAB-4B00-A36E-18444789CA80}
+		{9CF28F2A-E4D4-49A5-A412-3B02AD27934A} = {9A41639D-DAE2-430A-9B8F-6C0CC8A5D468}
+		{AAA37262-65E9-474F-8171-DDF65E728F8F} = {3B989CE9-1561-4090-AB6C-95CD30E89372}
+		{67279F6E-5054-4DB5-BBFB-824614BF14A4} = {3B989CE9-1561-4090-AB6C-95CD30E89372}
+		{6033AB92-CD5C-42E2-BA37-03C07FE4F067} = {3B989CE9-1561-4090-AB6C-95CD30E89372}
+	EndGlobalSection
+EndGlobal

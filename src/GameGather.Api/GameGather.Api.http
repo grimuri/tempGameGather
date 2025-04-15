@@ -1,0 +1,6 @@
+@GameGather.Api_HostAddress = http://localhost:5043
+
+GET {{GameGather.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
