@@ -34,10 +34,10 @@ jobs:
           Email.ApiKeyPrivate: ${{ secrets.EMAIL_API_KEY_PRIVATE }}
           Email.FromEmail: ${{ secrets.EMAIL_FROM_EMAIL }}
           Email.FromName: ${{ secrets.EMAIL_FROM_NAME }}
-          Jwt:Issuer: "issuer"
-          Jwt:Audience: "audience"
-          Jwt:SecretKey: "ssupasde sdamek asdmk a kasdkasnd ksak ndkasnd ksa ndkasdn"
-          Jwt:ValidFor: 120
+          Jwt.Issuer: "issuer"
+          Jwt.Audience: "audience"
+          Jwt.SecretKey: "ssupasde sdamek asdmk a kasdkasnd ksak ndkasnd ksa ndkasdn"
+          Jwt.ValidFor: 120
 
       - name: Build
         run: dotnet build ./GameGather.sln --no-restore --configuration Release
@@ -68,12 +68,17 @@ jobs:
         
       - name: Terraform Init
         id: init
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: |
-          terraform init \
-            -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \ -backend-config="container_name=${{ secrets.AZURE_CONTAINER_NAME }}" \
-            -backend-config="key=${{ secrets.AZURE_KEY }}" \
-            -backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP_NAME }}" \ -backend-config="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-            -backend-config="tenant_id=${{ secrets.AZURE_TENANT_ID }}"
+
+          echo "##[group]Terraform Init"
+          echo "Initializing Terraform..."
+
+          terraform init input=false
 
       - name: Terraform Validate
         run: terraform validate
