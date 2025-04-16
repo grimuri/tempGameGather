@@ -1,3 +1,3 @@
 variable "prefix" {
-  default = "gamegather"
+  default = "pr-gamegather"
 }
