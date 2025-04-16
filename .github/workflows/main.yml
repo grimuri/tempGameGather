@@ -173,15 +173,19 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.action != 'closed'
     steps:        
       - name: Login to Azure
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
+        uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ needs.terraform.outputs.terraform_output.webapp_name }}
           resource-group-name: ${{ needs.terraform.outputs.terraform_output.resource_group_name }}
           package: ./publish
+      
+      - name: Logout from Azure
+        run: |
+          az logout
