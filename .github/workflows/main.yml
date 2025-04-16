@@ -65,14 +65,15 @@ jobs:
       - name: Terraform Format
         id: fmt
         run: terraform fmt 
-
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
         
       - name: Terraform Init
-        run: terraform init --backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" --backend-config="container_name=${{ secrets.AZURE_CONTAINER_NAME }}" --backend-config="key=${{ secrets.AZURE_KEY }}" --backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP_NAME }}" --backend-config="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" --backend-config="tenant_id=${{ secrets.AZURE_TENANT_ID }}"
+        id: init
+        run: |
+          terraform init \
+          -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \ -backend-config="container_name=${{ secrets.AZURE_CONTAINER_NAME }}" \
+          -backend-config="key=${{ secrets.AZURE_KEY }}" \
+          -backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP_NAME }}" \ -backend-config="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+          -backend-config="tenant_id=${{ secrets.AZURE_TENANT_ID }}"
 
       - name: Terraform Validate
         run: terraform validate
