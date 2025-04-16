@@ -74,11 +74,10 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: |
-
           echo "##[group]Terraform Init"
           echo "Initializing Terraform..."
-
-          terraform init input=false
+          
+          terraform init -input=false
 
       - name: Terraform Validate
         run: terraform validate
