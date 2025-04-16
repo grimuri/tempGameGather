@@ -151,7 +151,7 @@ jobs:
 
       - name: Terraform Apply
         id: apply
-        run: terraform apply --auto-approve --no-color --input=false 
+        run: terraform apply -auto-approve -no-color -input=false 
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
