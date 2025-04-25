@@ -49,7 +49,7 @@ jobs:
         run: dotnet publish ./src/GameGather.Api/GameGather.Api.csproj -c Release -o ./publish --no-restore --no-build
 
       - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: .net-app
           path: ./publish
@@ -202,7 +202,7 @@ jobs:
         #           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}        
       
       - name: Download artifact from build job
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: .net-app
       
