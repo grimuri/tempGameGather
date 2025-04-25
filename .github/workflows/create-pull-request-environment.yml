@@ -46,7 +46,13 @@ jobs:
         run:  dotnet test ./GameGather.sln --configuration Release --no-restore --no-build
 
       - name: Publish
-        run: dotnet publish ./src/GameGather.Api/GameGather.Api.csproj -c Release -o ./publish
+        run: dotnet publish ./src/GameGather.Api/GameGather.Api.csproj -c Release -o ./publish --no-restore --no-build
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v2
+        with:
+          name: .net-app
+          path: ./publish
 
   terraform:
     if: github.event_name == 'pull_request'
@@ -55,6 +61,9 @@ jobs:
         working-directory: ./terraform/pr_environments
     runs-on: ubuntu-latest
     needs: build
+    outputs:
+      webapp_name: ${{ steps.terraform_output.outputs.webapp_name }}
+      resource_group_name: ${{ steps.terraform_output.outputs.resource_group_name }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -191,12 +200,18 @@ jobs:
         #           client-id: ${{ secrets.AZURE_CLIENT_ID }}
         #           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         #           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}        
+      
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: .net-app
+      
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ needs.terraform.outputs.terraform_output.webapp_name }}
-          resource-group-name: ${{ needs.terraform.outputs.terraform_output.resource_group_name }}
-          package: ./publish
+          app-name: ${{ needs.terraform.outputs.webapp_name }}
+          resource-group-name: ${{ needs.terraform.outputs.resource_group_name }}
+          package: .
       
       - name: Logout from Azure
         run: |
