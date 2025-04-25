@@ -1,0 +1,96 @@
+resource "azurerm_resource_group" "rg" {
+  name     = "${local.prefix_api}-rg"
+  location = var.location
+}
+
+resource "azurerm_log_analytics_workspace" "law" {
+  name                = "${local.prefix_api}-law"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+}
+
+resource "azurerm_container_app_environment" "ca_environment" {
+  name                       = "ca-env-${local.prefix_api}"
+  location                   = azurerm_resource_group.rg.location
+  resource_group_name        = azurerm_resource_group.rg.name
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id
+}
+
+resource "azurerm_container_app" "ca_db" {
+  name                         = "ca-${local.prefix_db}"
+  container_app_environment_id = azurerm_container_app_environment.ca_environment.id
+  resource_group_name          = azurerm_resource_group.rg.name
+  revision_mode                = "Single"
+
+  template {
+    container {
+      name   = "ca-${local.prefix_db}"
+      image  = "postgres:latest"
+      cpu    = 0.25
+      memory = "0.5Gi"
+
+      # Zmienne środowiskowe dla Postgres zgodne z docker-compose
+      env {
+        name  = "POSTGRES_DB"
+        value = "gamegather"
+      }
+      
+      env {
+        name  = "POSTGRES_USER"
+        value = "postgres"
+      }
+      
+      env {
+        name  = "POSTGRES_PASSWORD"
+        value = "postgres"
+      }
+    
+    }
+  }
+}
+
+resource "azurerm_container_app" "ca_api" {
+  name                         = "ca-${local.prefix_api}"
+  container_app_environment_id = azurerm_container_app_environment.ca_environment.id
+  resource_group_name          = azurerm_resource_group.rg.name
+  revision_mode                = "Single"
+
+  template {
+    container {
+      name   = "ca-${local.prefix_api}"
+      image  = "studweb.azurecr.io/gamegather-api:latest"
+      cpu    = 0.25
+      memory = "0.5Gi"
+
+      # Definicja portów eksponowanych przez kontener
+      env {
+        name  = "ASPNETCORE_URLS"
+        value = "http://+:5000"
+      }
+      
+       # Connection string do bazy danych
+      env {
+        name  = "ConnectionStrings__Default"
+        value = "Host=ca-${local.prefix_db};Port=5432;Database=gamegather;Username=postgres;Password=postgres"
+      }
+      
+      # Inne zmienne konfiguracyjne aplikacji
+      env {
+        name  = "ASPNETCORE_ENVIRONMENT"
+        value = "Development"
+      }
+    }
+  }
+
+  # Konfiguracja ingress - wymagana, aby aplikacja była dostępna z zewnątrz
+  ingress {
+    external_enabled = true
+    traffic_weight {
+      latest_revision = true
+      percentage      = 100
+    }
+    target_port = 80
+  }
+}

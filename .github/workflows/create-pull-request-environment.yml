@@ -207,12 +207,58 @@ jobs:
           name: .net-app
       
       - name: Deploy to Azure Web App
+        id: deploy
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ needs.terraform.outputs.webapp_name }}
           resource-group-name: ${{ needs.terraform.outputs.resource_group_name }}
           package: .
-      
+
+      - uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.TOKEN }}
+          script: |
+            // Istniejący kod komentarzy
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            
+            const deployComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('🚀 Deployment Status')
+            })
+            
+            const appUrl = 'http://${{ needs.terraform.outputs.webapp_name }}.azurewebsites.net';
+            
+            const output = `#### 🚀 Deployment Status: \`Success\`
+            
+            Your PR environment has been deployed successfully!
+            
+            ### 🌐 Environment URL
+            
+            **Application URL**: [Click here to access the application](${appUrl})
+            
+            *Deployed by: @${{ github.actor }}, PR: #${{ github.event.pull_request.number }}*`;
+            
+            // Reszta kodu komentarza
+            if (deployComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: deployComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
+
       - name: Logout from Azure
         run: |
           az logout
