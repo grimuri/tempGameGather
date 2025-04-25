@@ -22,10 +22,36 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, 
         IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString("Default");
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("Connection string 'Default' is empty");
+        }
+
         services.AddDbContext<GameGatherDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("Default"),
-                r =>
-                    r.MigrationsAssembly(typeof(DependencyInjection).Assembly.ToString())));
+        {
+            options
+                .UseNpgsql(connectionString, r =>
+                    r.MigrationsAssembly(typeof(DependencyInjection).Assembly.ToString()))
+                .EnableDetailedErrors();
+        });
+
+        // Dodaj sprawdzenie połączenia
+        var contextOptions = new DbContextOptionsBuilder<GameGatherDbContext>()
+            .UseNpgsql(connectionString)
+            .Options;
+
+        try
+        {
+            using var context = new GameGatherDbContext(contextOptions);
+            context.Database.OpenConnection();
+            context.Database.CloseConnection();
+        }
+        catch (NpgsqlException ex)
+        {
+            throw new Exception($"Nie można połączyć się z bazą danych. Connection string: '{connectionString}'", ex);
+        }
         
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
