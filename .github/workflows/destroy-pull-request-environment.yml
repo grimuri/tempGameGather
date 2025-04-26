@@ -142,39 +142,30 @@ jobs:
           echo "Logging in to Azure..."
           az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }} --output none
 
-      - name: Get latest successful workflow run ID
-        id: get-latest-run
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const workflowId = 'create-pull-request-environment.yml'; // nazwa Twojego workflow
-            const workflow = await github.rest.actions.listWorkflowRuns({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: workflowId,
-              status: 'success'
-            });
-            if (workflow.data.workflow_runs.length === 0) {
-              throw new Error('No successful workflow runs found');
-            }
-            const runId = workflow.data.workflow_runs[0].id;
-            console.log(`Latest successful run ID: ${runId}`);
-            return runId;
+      - name: Get run ID of "create-pull-request-environment" workflow
+        id: get-run-id
+        run: |
+          echo "Fetching latest successful run ID..."
+          RUN_ID=$(gh run list --workflow "create-pull-request-environment.yml" --status completed --json databaseId,conclusion --jq '.[] | select(.conclusion == "success") | .databaseId' | head -n 1)
+          echo "Detected latest successful run id: ${RUN_ID}"
+          echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
 
-      - name: Download artifacts
+      - name: Download artifact from build workflow
         uses: actions/download-artifact@v4
         with:
           name: .net-app
           github-token: ${{ secrets.GH_PAT }}
           repository: ${{ github.repository }}
-          run-id: ${{ steps.get-latest-run.outputs.result }}
+          run-id: ${{ steps.get-run-id.outputs.run-id }}
 
       - name: Deploy to Azure Web App
         id: deploy
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ needs.terraform.outputs.webapp_name }}
-          resource-group-name: ${{ needs.terraform.outputs.resource_group_name }}
+          app-name: ${{ needs.terraform_prod.outputs.webapp_name }}
+          resource-group-name: ${{ needs.terraform_prod.outputs.resource_group_name }}
           package: .
 
       - name: Logout from Azure
