@@ -1,3 +1,8 @@
 variable "prefix" {
-  default = "pr-gamegather"
+  default = "gamegather-api"
+}
+
+variable "location" {
+  default = "polandcentral"
+  
 }

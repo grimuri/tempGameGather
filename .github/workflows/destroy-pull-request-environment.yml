@@ -57,3 +57,128 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform destroy -auto-approve
+
+  terraform_prod:
+    if_merged:
+      if: github.event.pull_request.merged == true
+      needs: destroy
+      runs-on: ubuntu-latest
+      defaults:
+        run:
+          working-directory: ./terraform
+      outputs:
+        webapp_name: ${{ steps.terraform_output.outputs.webapp_name }}
+        resource_group_name: ${{ steps.terraform_output.outputs.resource_group_name }}
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Setup Terraform
+          uses: hashicorp/setup-terraform@v3.1.2
+
+        - name: Terraform Format
+          id: fmt
+          run: terraform fmt 
+          
+        - name: Terraform Init
+          id: init
+          env:
+            ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+            ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+            ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+            ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          run: |
+            echo "##[group]Terraform Init"
+            echo "Initializing Terraform..."
+            
+            terraform init -input=false \
+              -backend-config="resource_group_name=${{ secrets.AZURE_RESOURCE_GROUP_NAME_PROD }}" \
+              -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME_PROD }}" \
+              -backend-config="container_name=${{ secrets.AZURE_CONTAINER_NAME_PROD }}" \
+              -backend-config="key=${{ secrets.AZURE_KEY_PROD }}"
+
+        - name: Terraform Validate
+          id: validate
+          run: terraform validate
+
+        - name: Terraform Plan
+          id: plan
+          env:
+            ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+            ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+            ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+            ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          run: terraform plan -no-color -input=false
+
+        - name: Terraform Apply
+          id: apply
+          run: terraform apply -auto-approve -no-color -input=false 
+          env:
+            ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+            ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+            ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+            ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+            ARM_USE_AZUREAD: true    
+
+        - name: Terraform Output
+          id: terraform_output
+          run: |
+            echo "webapp_name=$(terraform output -raw webapp_name)" >> $GITHUB_OUTPUT
+            echo $(terraform output -raw webapp_name)
+            echo "resource_group_name=$(terraform output -raw resource_group_name)" >> $GITHUB_OUTPUT
+            echo $(terraform output -raw resource_group_name)
+          env:
+            ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+            ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+            ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+            ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}      
+
+  deploy:
+    if_merged: 
+      if: github.event.pull_request.merged == true
+      needs: terraform_prod
+      runs-on: ubuntu-latest
+      steps:
+        - name: Login to Azure
+          run: |
+            echo "Logging in to Azure..."
+            az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }} --output none
+
+        - name: Get latest successful workflow run ID
+          id: get-latest-run
+          uses: actions/github-script@v6
+          with:
+            script: |
+              const workflowId = 'create-pull-request-environment.yml'; // nazwa Twojego workflow
+              const workflow = await github.rest.actions.listWorkflowRuns({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: workflowId,
+                status: 'success'
+              });
+              if (workflow.data.workflow_runs.length === 0) {
+                throw new Error('No successful workflow runs found');
+              }
+              const runId = workflow.data.workflow_runs[0].id;
+              console.log(`Latest successful run ID: ${runId}`);
+              return runId;
+
+        - name: Download artifacts
+          uses: actions/download-artifact@v4
+          with:
+            name: .net-app
+            github-token: ${{ secrets.GH_PAT }}
+            repository: ${{ github.repository }}
+            run-id: ${{ steps.get-latest-run.outputs.result }}
+
+        - name: Deploy to Azure Web App
+          id: deploy
+          uses: azure/webapps-deploy@v3
+          with:
+            app-name: ${{ needs.terraform.outputs.webapp_name }}
+            resource-group-name: ${{ needs.terraform.outputs.resource_group_name }}
+            package: .
+
+        - name: Logout from Azure
+          run: |
+            az logout

@@ -194,12 +194,7 @@ jobs:
     steps:        
       - name: Login to Azure
         run: |
-          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-        # uses: azure/login@v2
-        #         with:
-        #           client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        #           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        #           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}        
+          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }} --output none   
       
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -230,7 +225,7 @@ jobs:
               return comment.user.type === 'Bot' && comment.body.includes('🚀 Deployment Status')
             })
             
-            const appUrl = 'http://${{ needs.terraform.outputs.webapp_name }}.azurewebsites.net';
+            const appUrl = 'http://${{ needs.terraform.outputs.webapp_name }}.azurewebsites.net/swagger/index.html';
             
             const output = `#### 🚀 Deployment Status: \`Success\`
             

@@ -1,6 +1,6 @@
 resource "azurerm_resource_group" "rg" {
   name     = "${var.prefix}-rg"
-  location = "polandcentral"
+  location = var.location
 }
 
 resource "azurerm_service_plan" "asp" {
@@ -8,7 +8,7 @@ resource "azurerm_service_plan" "asp" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   os_type             = "Linux"
-  sku_name            = "F1"
+  sku_name            = "B1"
 }
 
 resource "azurerm_linux_web_app" "as" {
@@ -23,4 +23,9 @@ resource "azurerm_linux_web_app" "as" {
         dotnet_version = "8.0"
     }
   }
+
+  app_settings = {
+    "ASPNETCORE_ENVIRONMENT" = "Development"
+  }
 }
+
