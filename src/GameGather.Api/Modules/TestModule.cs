@@ -21,5 +21,17 @@ public static class TestModule
             var response = await emailService.SendEmailAsync(emailMessage);
             return Ok(response);
         });
+        app.MapGet("/api/get-settings", async (
+            [FromServices] IConfiguration configuration
+        ) =>
+        {
+            var response = new
+            {
+                ConnectionString = configuration.GetConnectionString("Default"),
+                JwtSecret = configuration["Jwt:SecretKey"],
+                
+            };
+            return Ok(response);
+        });
     }
 }

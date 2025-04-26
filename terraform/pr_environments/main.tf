@@ -79,11 +79,7 @@ resource "azurerm_linux_web_app" "as" {
 
   app_settings = {
     "ASPNETCORE_ENVIRONMENT" = "Development"
+    "ConnectionStrings__Default" = "Server=${azurerm_postgresql_flexible_server.postgresql_server.fqdn};Port=5432;Database=${azurerm_postgresql_flexible_server_database.postgresql_db.name};Username=${azurerm_postgresql_flexible_server.postgresql_server.administrator_login};Password=${azurerm_postgresql_flexible_server.postgresql_server.administrator_password};SSL Mode=Require;"
   }
 
-  connection_string {
-  name  = "Default"
-  type  = "PostgreSQL"
-  value = "Server=${azurerm_postgresql_flexible_server.postgresql_server.fqdn};Port=5432;Database=${azurerm_postgresql_flexible_server_database.postgresql_db.name};Username=${azurerm_postgresql_flexible_server.postgresql_server.administrator_login};Password=${azurerm_postgresql_flexible_server.postgresql_server.administrator_password};SSL Mode=Require;"
-}
 }
