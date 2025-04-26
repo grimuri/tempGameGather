@@ -137,6 +137,9 @@ jobs:
     needs: terraform_prod
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
       - name: Login to Azure
         run: |
           echo "Logging in to Azure..."
@@ -146,7 +149,7 @@ jobs:
         id: get-run-id
         run: |
           echo "Fetching latest successful run ID..."
-          RUN_ID=$(gh run list --workflow "create-pull-request-environment.yml" --status completed --json databaseId,conclusion --jq '.[] | select(.conclusion == "success") | .databaseId' | head -n 1)
+          RUN_ID=$(gh run list --repo ${{ github.repository }} --workflow "create-pull-request-environment.yml" --status completed --json databaseId,conclusion --jq '.[] | select(.conclusion == "success") | .databaseId' | head -n 1)
           echo "Detected latest successful run id: ${RUN_ID}"
           echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
         env:
