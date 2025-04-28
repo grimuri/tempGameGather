@@ -136,6 +136,8 @@ jobs:
     if: github.event.pull_request.merged == true
     needs: terraform_prod
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Wymagane uprawnienia do tworzenia releases
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -174,3 +176,38 @@ jobs:
       - name: Logout from Azure
         run: |
           az logout
+        
+      # Kroki przeniesione z create_release
+      - name: Copy artifact for release
+        run: |
+          mkdir -p ./release-artifact
+          cp -r ./* ./release-artifact/ || true
+    
+      - name: Create ZIP archive
+        run: |
+          cd ./release-artifact
+          zip -r ../gamegather-app.zip .
+          cd ..
+    
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d-%H-%M')" >> $GITHUB_OUTPUT
+    
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: release-${{ steps.date.outputs.date }}
+          name: Release ${{ steps.date.outputs.date }}
+          files: gamegather-app.zip
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            # Release notes
+            
+            Automatyczne wydanie po zmergeowaniu PR #${{ github.event.pull_request.number }}
+            
+            **PR Title**: ${{ github.event.pull_request.title }}
+            **Merged by**: ${{ github.actor }}
+            **Wdrożono na**: ${{ needs.terraform_prod.outputs.webapp_name }}
