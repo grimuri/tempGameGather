@@ -165,6 +165,12 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ steps.get-run-id.outputs.run-id }}
           path: ./app-artifacts  # Pobierz do konkretnego katalogu
+      
+      - name: Check directory contents
+        run: |
+          ls -la
+          ls -la ./app-artifacts
+          ls -la ./app-artifacts/.net-app
 
       - name: Deploy to Azure Web App
         id: deploy
@@ -172,7 +178,7 @@ jobs:
         with:
           app-name: ${{ needs.terraform_prod.outputs.webapp_name }}
           resource-group-name: ${{ needs.terraform_prod.outputs.resource_group_name }}
-          package: .
+          package: ./app-artifacts/.net-app  # Ścieżka do katalogu z artefaktami
 
       - name: Logout from Azure
         run: |
