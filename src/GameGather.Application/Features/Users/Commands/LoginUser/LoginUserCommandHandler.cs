@@ -31,7 +31,7 @@ public sealed class LoginUserCommandHandler : ICommandHandler<LoginUserCommand, 
 
     public async Task<ErrorOr<LoginUserResponse>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByEmailAsync(request.Email);
+        var user = _userRepository.GetByEmailAsync(request.Email);
 
         // User not found
         if (user is null)

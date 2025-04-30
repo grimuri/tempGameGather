@@ -13,16 +13,22 @@ public class UserRepository : IUserRepository
     {
         _dbContext = dbContext;
     }
+    
 
-    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+    public User GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
-        var user = await _dbContext.Users.FirstOrDefaultAsync(r => r.Email == email);
+        var user = _dbContext.Users.FirstOrDefault(r => r.Email == email);
 
         return user;
     }
 
-    public async Task AddUserAsync(User user, CancellationToken cancellationToken = default)
+    public void AddUserAsync(User user, CancellationToken cancellationToken = default)
     {
-        await _dbContext.Users.AddAsync(user);
+        _dbContext.Users.Add(user);
+    }
+
+    public bool AnyUserAsync(string email, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.Users.Any(r => r.Email == email);
     }
 }

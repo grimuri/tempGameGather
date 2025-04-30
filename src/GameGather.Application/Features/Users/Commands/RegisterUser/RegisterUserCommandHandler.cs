@@ -26,9 +26,9 @@ public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, R
 
     public async Task<ErrorOr<RegisterUserResponse>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        var exist = await _userRepository.GetByEmailAsync(request.Email);
+        var exist = _userRepository.AnyUserAsync(request.Email, cancellationToken);
 
-        if (exist is not null)
+        if (exist)
         {
             return Errors.User.DuplicateEmail;
         }
@@ -42,9 +42,9 @@ public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, R
             passwordHash,
             request.Birthday);
 
-        await _userRepository.AddUserAsync(user);
+        _userRepository.AddUserAsync(user);
         
-        await _unitOfWork.SaveChangesAsync();
+        _unitOfWork.SaveChangesAsync();
 
         return new RegisterUserResponse(
             user.Id.Value,

@@ -4,6 +4,7 @@ namespace GameGather.Application.Persistance;
 
 public interface IUserRepository
 {
-    Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
-    Task AddUserAsync(User user, CancellationToken cancellationToken = default);
+    User? GetByEmailAsync(string email, CancellationToken cancellationToken = default);
+    void AddUserAsync(User user, CancellationToken cancellationToken = default);
+    bool AnyUserAsync(string email, CancellationToken cancellationToken = default);
 }

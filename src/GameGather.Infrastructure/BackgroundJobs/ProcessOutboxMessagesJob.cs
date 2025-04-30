@@ -23,11 +23,11 @@ public sealed class ProcessOutboxMessagesJob : IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
-        var messages = await _dbContext
+        var messages = _dbContext
             .OutboxMessages
             .Where(x => x.ProcessedOnUtc == null)
             .Take(20)
-            .ToListAsync(context.CancellationToken);
+            .ToList();
 
         foreach (var message in messages)
         {
@@ -62,6 +62,6 @@ public sealed class ProcessOutboxMessagesJob : IJob
             
         }
         
-        await _dbContext.SaveChangesAsync(context.CancellationToken);
+        _dbContext.SaveChanges();
     }
 }
