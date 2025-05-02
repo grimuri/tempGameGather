@@ -1,8 +1,8 @@
 name: Destroy pull request environment - GameGatherApi
 
 on:
-  pull_request:
-    types: [closed]
+  # pull_request:
+  #   types: [closed]
   workflow_dispatch:
 
 permissions:
