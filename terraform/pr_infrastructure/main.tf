@@ -38,7 +38,7 @@ resource "azurerm_postgresql_flexible_server_firewall_rule" "allow_azure_service
 }
 
 resource "azurerm_postgresql_flexible_server_firewall_rule" "allow_me" {
-  name                = "AllowMe"
+  name                = "AllowMes"
   server_id           = azurerm_postgresql_flexible_server.postgresql_server.id
   start_ip_address    = "178.235.126.128"
   end_ip_address      = "178.235.126.128"
