@@ -8,13 +8,13 @@ on:
 
 
 jobs:
-  terraform:
-    environement: 
-      name: plan-prod-infrastructure
+  terraform:    
     defaults:
       run:
         working-directory: ./terraform/prod_infrastructure
     runs-on: ubuntu-latest
+    environement: 
+      name: "plan-prod-infrastructure"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
