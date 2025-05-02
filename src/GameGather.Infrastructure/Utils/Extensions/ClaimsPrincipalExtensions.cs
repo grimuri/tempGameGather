@@ -6,7 +6,7 @@ public static class ClaimsPrincipalExtensions
 {
     public static int GetUserId(this ClaimsPrincipal? principal)
     {
-        var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = principal?.FindFirstValue(ClaimTypes.NameIdentifier);
 
         return Convert.ToInt32(userId);
     }

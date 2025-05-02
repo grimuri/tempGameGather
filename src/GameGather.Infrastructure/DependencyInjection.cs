@@ -4,7 +4,7 @@ using GameGather.Application.Utils;
 using GameGather.Application.Utils.Email;
 using GameGather.Infrastructure.Authentication;
 using GameGather.Infrastructure.BackgroundJobs;
-using GameGather.Infrastructure.Persistance;
+using GameGather.Infrastructure.Database;
 using GameGather.Infrastructure.Repositories;
 using GameGather.Infrastructure.Utils;
 using GameGather.Infrastructure.Utils.Email;

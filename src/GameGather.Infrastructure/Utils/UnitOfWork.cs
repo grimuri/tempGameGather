@@ -1,6 +1,6 @@
 using GameGather.Application.Persistance;
 using GameGather.Domain.Common.Primitives;
-using GameGather.Infrastructure.Persistance;
+using GameGather.Infrastructure.Database;
 using GameGather.Infrastructure.Utils.Outbox;
 using MediatR;
 using Newtonsoft.Json;
@@ -16,14 +16,13 @@ public sealed class UnitOfWork : IUnitOfWork
         _dbContext = dbContext;
     }
 
-    public Task SaveChangesAsync(CancellationToken cancellationToken = default)
+    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        ConvertDomainEventsToOutboxMessagesAsync();
-        _dbContext.SaveChanges();
-        return Task.CompletedTask;
+        await ConvertDomainEventsToOutboxMessagesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
     
-    private Task ConvertDomainEventsToOutboxMessagesAsync()
+    private async Task ConvertDomainEventsToOutboxMessagesAsync(CancellationToken cancellationToken = default)
     {
         var outboxMessages = _dbContext.ChangeTracker
             .Entries<IAggregateRoot>()
@@ -45,8 +44,8 @@ public sealed class UnitOfWork : IUnitOfWork
                 })
             })
             .ToList();
+            
 
-        _dbContext.OutboxMessages.AddRange(outboxMessages);
-        return Task.CompletedTask;
+        await _dbContext.OutboxMessages.AddRangeAsync(outboxMessages, cancellationToken);
     }
 }

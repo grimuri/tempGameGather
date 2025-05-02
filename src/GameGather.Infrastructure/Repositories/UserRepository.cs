@@ -1,6 +1,6 @@
 using GameGather.Application.Persistance;
 using GameGather.Domain.Aggregates.Users;
-using GameGather.Infrastructure.Persistance;
+using GameGather.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameGather.Infrastructure.Repositories;
@@ -15,20 +15,20 @@ public class UserRepository : IUserRepository
     }
     
 
-    public User GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
-        var user = _dbContext.Users.FirstOrDefault(r => r.Email == email);
+        var user = await _dbContext.Users.FirstOrDefaultAsync(r => r.Email == email);
 
         return user;
     }
 
-    public void AddUserAsync(User user, CancellationToken cancellationToken = default)
+    public async Task AddUserAsync(User user, CancellationToken cancellationToken = default)
     {
-        _dbContext.Users.Add(user);
+        await _dbContext.Users.AddAsync(user);
     }
 
-    public bool AnyUserAsync(string email, CancellationToken cancellationToken = default)
+    public async Task<bool> AnyUserAsync(string email, CancellationToken cancellationToken = default)
     {
-        return _dbContext.Users.Any(r => r.Email == email);
+        return await _dbContext.Users.AnyAsync(r => r.Email == email);
     }
 }

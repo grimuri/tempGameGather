@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using GameGather.Application.Features.Users.Commands.LoginUser;
 using GameGather.Application.Features.Users.Commands.RegisterUser;
 using MediatR;
@@ -15,7 +16,10 @@ public static class AuthenticationModule
             [FromBody] RegisterUserCommand command,
             [FromServices] ISender sender) =>
         {
+            var stopwatch = Stopwatch.StartNew();
             var response = await sender.Send(command);
+            stopwatch.Stop();
+            Console.WriteLine($"Register user took: {stopwatch.ElapsedMilliseconds} ms");
 
             return response.Match(
                 result => Ok(result),

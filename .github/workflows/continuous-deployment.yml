@@ -1,0 +1,67 @@
+name: Continuous Deployment
+
+on:
+  # push:
+  #   branches:
+  #     - main
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore ./GameGather.sln
+        
+      - name: Substitute appsettings.json entries
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: './src/GameGather.Api/appsettings.json'
+        env:
+          Email.ApiKeyPublic: ${{ secrets.EMAIL_API_KEY_PUBLIC }}
+          Email.ApiKeyPrivate: ${{ secrets.EMAIL_API_KEY_PRIVATE }}
+          Email.FromEmail: ${{ secrets.EMAIL_FROM_EMAIL }}
+          Email.FromName: ${{ secrets.EMAIL_FROM_NAME }}
+          Jwt.Issuer: "issuer"
+          Jwt.Audience: "audience"
+          Jwt.SecretKey: "ssupasde sdamek asdmk a kasdkasnd ksak ndkasnd ksa ndkasdn"
+          Jwt.ValidFor: 120
+
+      - name: Build
+        run: dotnet build ./GameGather.sln --no-restore --configuration Release
+
+      - name: Test
+        run:  dotnet test ./GameGather.sln --configuration Release --no-restore --no-build
+
+      - name: Publish
+        run: dotnet publish ./src/GameGather.Api/GameGather.Api.csproj -c Release -o ./publish --no-restore --no-build
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: .net-app
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: .

@@ -1,5 +1,6 @@
+using System.Diagnostics;
 using GameGather.Domain.Common.Primitives;
-using GameGather.Infrastructure.Persistance;
+using GameGather.Infrastructure.Database;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -23,12 +24,19 @@ public sealed class ProcessOutboxMessagesJob : IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
-        var messages = _dbContext
+        var stopwatch = Stopwatch.StartNew();
+        
+        var messages = await _dbContext
             .OutboxMessages
             .Where(x => x.ProcessedOnUtc == null)
             .Take(20)
-            .ToList();
+            .ToListAsync(context.CancellationToken);
 
+        stopwatch.Stop();
+        Console.WriteLine($"Fetching messages took: {stopwatch.ElapsedMilliseconds} ms");
+
+        stopwatch.Restart();
+        
         foreach (var message in messages)
         {
             try
@@ -62,6 +70,14 @@ public sealed class ProcessOutboxMessagesJob : IJob
             
         }
         
-        _dbContext.SaveChanges();
+        stopwatch.Stop();
+        Console.WriteLine($"Processing messages took: {stopwatch.ElapsedMilliseconds} ms");
+
+        stopwatch.Restart();
+        
+        await _dbContext.SaveChangesAsync();
+        
+        stopwatch.Stop();
+        Console.WriteLine($"Saving changes took: {stopwatch.ElapsedMilliseconds} ms");
     }
 }

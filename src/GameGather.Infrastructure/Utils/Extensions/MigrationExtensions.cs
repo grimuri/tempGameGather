@@ -1,4 +1,4 @@
-﻿using GameGather.Infrastructure.Persistance;
+﻿using GameGather.Infrastructure.Database;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -10,7 +10,7 @@ namespace GameGather.Infrastructure.Utils.Extensions;
 
 public static class MigrationExtensions
 {
-    public static void ApplyMigration(this WebApplication app)
+    public static async Task ApplyMigration(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<GameGatherDbContext>();
@@ -19,7 +19,7 @@ public static class MigrationExtensions
 
         try
         {
-            context.Database.Migrate();
+            await context.Database.MigrateAsync();
         }
         catch (NpgsqlException ex)
         {

@@ -1,12 +1,12 @@
 # Database
 
 resource "azurerm_resource_group" "rg_db" {
-  name     = "${var.prefix_db}-rg"
+  name     = "${local.prefix_db}-rg"
   location = var.location
 }
 
 resource "azurerm_postgresql_flexible_server" "postgresql_server" {
-  name                   = "${var.prefix_db}-server"
+  name                   = "db-server-${local.prefix_db}"
   resource_group_name    = azurerm_resource_group.rg_db.name
   location               = azurerm_resource_group.rg_db.location
   version                = "16"
@@ -16,15 +16,15 @@ resource "azurerm_postgresql_flexible_server" "postgresql_server" {
   sku_name               = "B_Standard_B1ms"
 
   storage_mb             = 32768
-  
+  zone                   = "1"  
+
   backup_retention_days  = 7
-  zone                   = "1"
   
   geo_redundant_backup_enabled = false
 }
 
 resource "azurerm_postgresql_flexible_server_database" "postgresql_db" {
-  name      = "${var.prefix_db}-database"
+  name      = "gamegatherdb"
   server_id = azurerm_postgresql_flexible_server.postgresql_server.id
   collation = "en_US.utf8"
   charset   = "UTF8"
@@ -53,20 +53,20 @@ resource "azurerm_postgresql_flexible_server_configuration" "ssl_off" {
 # Backend
 
 resource "azurerm_resource_group" "rg" {
-  name     = "${var.prefix_api}-rg"
+  name     = "${local.prefix_api}-rg"
   location = var.location
 }
 
 resource "azurerm_service_plan" "asp" {
-  name                = "${var.prefix_api}-asp"
+  name                = "asp-${local.prefix_api}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   os_type             = "Linux"
-  sku_name            = "B3"
+  sku_name            = "B1"
 }
 
 resource "azurerm_linux_web_app" "as" {
-  name                = "${var.prefix_api}-webapp"
+  name                = "webapp-${local.prefix_api}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   service_plan_id     = azurerm_service_plan.asp.id
@@ -76,6 +76,7 @@ resource "azurerm_linux_web_app" "as" {
     application_stack {
         dotnet_version = "8.0"
     }
+
     cors {
       allowed_origins = ["*"]
     }

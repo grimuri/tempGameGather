@@ -1,9 +1,8 @@
-using System.Reflection.Metadata;
 using GameGather.Domain.Aggregates.Users;
 using GameGather.Infrastructure.Utils.Outbox;
 using Microsoft.EntityFrameworkCore;
 
-namespace GameGather.Infrastructure.Persistance;
+namespace GameGather.Infrastructure.Database;
 
 public class GameGatherDbContext : DbContext
 {

@@ -41,7 +41,7 @@ public sealed class EmailService : IEmailService
                 }
             });
         
-        var response = _client.PostAsync(request).Result;
+        var response = await _client.PostAsync(request);
         
         if (response.IsSuccessStatusCode)
         {
