@@ -17,6 +17,8 @@ jobs:
       run:
         working-directory: ./terraform/pr_infrastructure
     runs-on: ubuntu-latest
+    environment: 
+      name: "Development"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
