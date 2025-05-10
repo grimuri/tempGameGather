@@ -59,7 +59,7 @@ jobs:
     if: github.event_name == 'pull_request'
     defaults:
       run:
-        working-directory: ./terraform/pr_environments
+        working-directory: ./terraform/pr_infrastructure
     runs-on: ubuntu-latest
     environment: 
       name: "Development"

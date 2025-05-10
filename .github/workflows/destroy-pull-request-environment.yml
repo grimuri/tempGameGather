@@ -15,7 +15,7 @@ jobs:
   destroy:
     defaults:
       run:
-        working-directory: ./terraform/pr_environments
+        working-directory: ./terraform/pr_infrastructure
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
