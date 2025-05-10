@@ -108,7 +108,7 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          resource_group_name: ${{ secrets.AZURE_RESOURCE_GROUP_NAME_PROD }}
+          resource-group-name: ${{ secrets.AZURE_RESOURCE_GROUP_NAME_PROD }}
           package: .
 
       - name: Logout from Azure
