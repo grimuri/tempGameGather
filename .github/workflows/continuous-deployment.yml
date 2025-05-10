@@ -6,7 +6,6 @@ on:
       - main
   workflow_dispatch:
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -57,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: 
       name: "Production"
-      url: ${{ steps.deploy.outputs.webapp_url }}
+      url: ${{ steps.deploy.outputs.webapp_url }}      
     permissions:
       contents: write
     steps:
@@ -107,8 +106,8 @@ jobs:
         id: deploy
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          resource-group-name: ${{ secrets.AZURE_RESOURCE_GROUP_NAME_PROD }}
+          app-name: $ {{ env.AZURE_WEBAPP_NAME }}
+          resource-group-name: ${{ env.AZURE_RESOURCE_GROUP_NAME }}
           package: .
 
       - name: Logout from Azure
