@@ -102,6 +102,7 @@ jobs:
         run: |
           echo "Logging in to Azure..."
           az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }} --output none
+          cd ..
         
       - name: Deploy to Azure Web App
         id: deploy
