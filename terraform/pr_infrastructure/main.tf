@@ -1,14 +1,19 @@
 # Database
 
-resource "azurerm_resource_group" "rg_db" {
-  name     = "${local.prefix_db}-rg"
+# resource "azurerm_resource_group" "rg_db" {
+#   name     = "${local.prefix_db}-rg"
+#   location = var.location
+# }
+
+resource "azurerm_resource_group" "rg" {
+  name     = "${local.prefix_api}-rg"
   location = var.location
 }
 
 resource "azurerm_postgresql_flexible_server" "postgresql_server" {
-  name                   = "db-server-${local.prefix_db}"
-  resource_group_name    = azurerm_resource_group.rg_db.name
-  location               = azurerm_resource_group.rg_db.location
+  name                   = "${local.prefix_db}-server"
+  resource_group_name    = azurerm_resource_group.rg.name
+  location               = azurerm_resource_group.rg.location
   version                = "16"
   administrator_login    = "postgres"
   administrator_password = "postgres"
@@ -24,7 +29,7 @@ resource "azurerm_postgresql_flexible_server" "postgresql_server" {
 }
 
 resource "azurerm_postgresql_flexible_server_database" "postgresql_db" {
-  name      = "gamegatherdb"
+  name      = "${local.prefix_db}-database"
   server_id = azurerm_postgresql_flexible_server.postgresql_server.id
   collation = "en_US.utf8"
   charset   = "UTF8"
@@ -50,15 +55,11 @@ resource "azurerm_postgresql_flexible_server_configuration" "ssl_off" {
   value     = "off"
 }
 
+
 # Backend
 
-resource "azurerm_resource_group" "rg" {
-  name     = "${local.prefix_api}-rg"
-  location = var.location
-}
-
 resource "azurerm_service_plan" "asp" {
-  name                = "asp-${local.prefix_api}"
+  name                = "${local.prefix_api}-asp"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   os_type             = "Linux"
@@ -66,7 +67,7 @@ resource "azurerm_service_plan" "asp" {
 }
 
 resource "azurerm_linux_web_app" "as" {
-  name                = "webapp-${local.prefix_api}"
+  name                = "${local.prefix_api}-webapp"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   service_plan_id     = azurerm_service_plan.asp.id

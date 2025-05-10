@@ -9,3 +9,7 @@ variable "prefix_db" {
 variable "location" {
   default = "polandcentral"
 }
+
+variable "resource_group_name" {
+  default = "gamegather-rg"  
+}

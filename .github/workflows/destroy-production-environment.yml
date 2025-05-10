@@ -1,18 +1,16 @@
-name: Change production infrastructure
+name: Destroy Production Environment
 
 on:
-  push:
-    paths:
-      - "terraform/prod_infrastructure/**"
   workflow_dispatch:
 
-
 jobs:
-  terraform:    
+  destroy-environment:
     defaults:
       run:
         working-directory: ./terraform/prod_infrastructure
     runs-on: ubuntu-latest
+    environment: 
+      name: "Production"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,10 +18,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3.1.2
 
-      - name: Terraform Format
-        id: fmt
-        run: terraform fmt 
-        
       - name: Terraform Init
         id: init
         env:
@@ -40,16 +34,12 @@ jobs:
             -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME_PROD }}" \
             -backend-config="container_name=${{ secrets.AZURE_CONTAINER_NAME_PROD }}" \
             -backend-config="key=${{ secrets.AZURE_KEY_PROD }}"
-
-      - name: Terraform Validate
-        id: validate
-        run: terraform validate
-
-      - name: Terraform Plan
-        id: plan
+      
+      - name: Terraform Destroy
+        id: destroy
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        run: terraform plan -no-color -input=false
+        run: terraform destroy -auto-approve  

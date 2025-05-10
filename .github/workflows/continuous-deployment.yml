@@ -1,15 +1,16 @@
 name: Continuous Deployment
 
 on:
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: "Production"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -49,19 +50,67 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
+          path: ./publish
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    environment: 
+      name: "Production"
+      url: ${{ steps.deploy.outputs.webapp_url }}
+    permissions:
+      contents: write
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: ./app-artifacts
+
+      - name: Create ZIP archive
+        run: |
+          cd ./app-artifacts
+          zip -r ../gamegather-app.zip ./*
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d-%H-%M')" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: release-${{ steps.date.outputs.date }}
+          name: Release ${{ steps.date.outputs.date }}
+          files: gamegather-app.zip
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            # Release notes
+            
+            Automatyczne wydanie po zmergeowaniu PR #${{ github.event.pull_request.number }}
+            
+            **PR Title**: ${{ github.event.pull_request.title }}
+            **Merged by**: ${{ github.actor }}
+            **Wdrożono na**: ${{ needs.terraform_prod.outputs.webapp_name }}
+
+      - name: Login to Azure
+        run: |
+          echo "Logging in to Azure..."
+          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }} --output none
 
       - name: Deploy to Azure Web App
+        id: deploy
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          resource_group_name: ${{ secrets.AZURE_RESOURCE_GROUP_NAME_PROD }}
           package: .
+
+      - name: Logout from Azure
+        run: |
+          az logout
