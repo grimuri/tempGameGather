@@ -6,6 +6,7 @@ on:
       - main
   workflow_dispatch:
 
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -101,19 +102,13 @@ jobs:
         run: |
           echo "Logging in to Azure..."
           az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }} --output none
-
-      - name: Show environment variables
-        run: |
-          echo ${ env.AZURE_WEBAPP_NAME}
-          echo ${{ env.AZURE_RESOURCE_GROUP_NAME }}
-          
-
+        
       - name: Deploy to Azure Web App
         id: deploy
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${ env.AZURE_WEBAPP_NAME }
-          resource-group-name: ${ env.AZURE_RESOURCE_GROUP_NAME }
+          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          resource-group-name: ${{ vars.AZURE_RESOURCE_GROUP_NAME }}
           package: .
 
       - name: Logout from Azure
