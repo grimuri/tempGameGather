@@ -52,6 +52,12 @@ jobs:
           terraform plan -no-color -input=false -out=tfplan
           echo "tfplan-path=tfplan" >> $GITHUB_OUTPUT
 
+      - name: Upload tfplan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: ./tfplan
+
   terraform-aply:
     needs: terraform-plan
     defaults:
@@ -84,6 +90,12 @@ jobs:
             -backend-config="storage_account_name=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             -backend-config="container_name=${{ secrets.AZURE_CONTAINER_NAME }}" \
             -backend-config="key=${{ secrets.AZURE_KEY }}"
+          
+      - name: Download tfplan artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: .
 
       - name: Terraform Aply
         id: aply
