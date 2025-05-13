@@ -2,8 +2,8 @@ name: Create pull request environment - GameGatherApi
 
 on:
   pull_request:
-    types: [edited]
-    # types: [reopened, opened, synchronize, edited]
+    # types: [edited]
+    types: [reopened, opened, synchronize, edited]
   workflow_dispatch:
 
 permissions:
