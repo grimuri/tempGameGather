@@ -5,7 +5,7 @@ output "webapp_name" {
 
 output "webapp_publish_url" {
   value = "https://${azurerm_linux_web_app.as.default_hostname}/swagger/index.html"
-  description = "URL publikacji aplikacji weboweej"
+  description = "URL publikacji aplikacji webowej"
 }
 
 output "resource_group_name" {
