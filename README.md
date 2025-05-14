@@ -1,7 +1,7 @@
 # GameGather
 
 ## Description
-GameGather is a web application that helps users manage their board game collection, organize gaming sessions, and connect with other board game enthusiasts. The application provides a user-friendly interface for managing game libraries and scheduling gaming events.
+GameGather is a web application that helps users manage their board game collection, organize gaming session, and connect with other board game enthusiasts. The application provides a user-friendly interface for managing game libraries and scheduling gaming events.
 
 ## Features
 
