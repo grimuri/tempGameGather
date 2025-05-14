@@ -1,7 +1,9 @@
 name: Change production infrastructure
 
 on:
-  push:
+  pull_request:
+    branches:
+      - main
     paths:
       - "terraform/prod_infrastructure/**"
   workflow_dispatch:
