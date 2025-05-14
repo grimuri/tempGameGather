@@ -100,9 +100,6 @@ jobs:
           name: tfplan
           path: .
 
-      - name: Show directory
-        run: ls -la
-
       - name: Terraform Aply
         id: aply
         env:
